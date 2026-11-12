@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b5d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gofasst Cargo">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Gofasst Cargo</title>
+<style>
+:root{--navy:#123b5d;--blue:#1769aa;--bg:#f3f6f9;--ink:#17212b;--muted:#657382;--line:#dce3e9;--green:#16834a;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:var(--navy);color:white;padding:20px 16px 16px;position:sticky;top:0;z-index:5}
+header h1{font-size:21px;margin:0 0 4px}header p{margin:0;color:#d8e6f1;font-size:12px}
+nav{display:flex;gap:6px;overflow:auto;padding:10px;background:white;border-bottom:1px solid var(--line);position:sticky;top:69px;z-index:4}
+nav button{white-space:nowrap;border:0;border-radius:20px;padding:9px 13px;background:#edf2f6;color:#334;font-weight:600}
+nav button.active{background:var(--navy);color:white}
+main{max-width:900px;margin:auto;padding:14px 12px 40px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:15px;margin:0 0 13px;box-shadow:0 1px 2px #00000008}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:14px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.metric{background:#f5f8fb;border-radius:10px;padding:12px}.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:20px;margin-top:5px;overflow-wrap:anywhere}
+label{display:block;font-size:12px;font-weight:650;color:#465461;margin:9px 0 4px}
+input,select,textarea{width:100%;border:1px solid #cbd5de;border-radius:9px;padding:11px;font:inherit;background:white;color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+button.primary,button.secondary,button.danger{border:0;border-radius:9px;padding:11px 14px;font-weight:700;margin:8px 6px 0 0}
+.primary{background:var(--blue);color:white}.secondary{background:#eaf0f5;color:#21384a}.danger{background:#fff0ef;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted)}
+.tablewrap{overflow:auto}.muted{color:var(--muted)}.positive{color:var(--green);font-weight:700}.negative{color:var(--red);font-weight:700}
+.hidden{display:none!important}.note{font-size:12px;color:var(--muted);line-height:1.5}.pill{display:inline-block;background:#eaf2f8;border-radius:20px;padding:4px 8px;font-size:11px}
+.actions{display:flex;flex-wrap:wrap;gap:5px}.actions button{margin:0}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}}
+</style>
+</head>
+<body>
+<header><h1>Gofasst Cargo</h1><p>Boston → Haiti · Cargo, customers, containers & profit</p></header>
+<nav id="tabs">
+<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="shipments">Cargo Log</button><button data-tab="containers">Containers</button><button data-tab="rates">Rates & Costs</button><button data-tab="backup">Backup</button>
+</nav>
+<main>
+<section id="dashboard" class="tab">
+<div class="panel"><h2>Business overview</h2><div class="grid" id="metrics"></div></div>
+<div class="panel"><h2>Current pricing guide</h2><div id="pricingGuide"></div><p class="note">Figures are starting assumptions. Edit them in Rates & Costs to match your actual charges.</p></div>
+<div class="panel"><h2>Recent cargo</h2><div id="recent"></div></div>
+</section>
+
+<section id="shipments" class="tab hidden">
+<div class="panel"><h2>Add cargo / customer</h2>
+<form id="shipmentForm">
+<div class="formgrid">
+<div><label>Customer name</label><input name="customer" required placeholder="Customer name"></div>
+<div><label>Phone / WhatsApp</label><input name="phone" placeholder="Phone number"></div>
+<div><label>Container</label><select name="container" id="shipmentContainer"></select></div>
+<div><label>Cargo type</label><select name="type"><option value="kg">Regular cargo — kg</option><option value="cuft">Furniture / mattress — cubic feet</option><option value="fixed">Fixed-price shipment</option></select></div>
+<div><label>Weight (kg) / volume (cu ft) / quantity</label><input name="quantity" type="number" min="0" step="0.01" required value="0"></div>
+<div><label>Rate per unit ($)</label><input name="rate" type="number" min="0" step="0.01" required></div>
+<div><label>Amount paid ($)</label><input name="paid" type="number" min="0" step="0.01" value="0"></div>
+<div><label>Date</label><input name="date" type="date" id="shipmentDate"></div>
+</div>
+<label>Notes</label><textarea name="notes" rows="2" placeholder="Description, destination, reference..."></textarea>
+<button class="primary" type="submit">Save cargo record</button>
+</form></div>
+<div class="panel"><div class="row"><div><h2>Cargo records</h2></div><div><input id="shipmentSearch" placeholder="Search customer / phone"></div></div><div class="tablewrap" id="shipmentTable"></div></div>
+</section>
+
+<section id="containers" class="tab hidden">
+<div class="panel"><h2>Add a container</h2>
+<form id="containerForm">
+<div class="row"><div><label>Container name / number</label><input name="name" required placeholder="Example: Haiti 40ft #1"></div><div><label>Target capacity (kg)</label><input name="capacity" type="number" value="20000" min="0"></div></div>
+<button class="primary" type="submit">Add container</button></form></div>
+<div id="containerList"></div>
+</section>
+
+<section id="rates" class="tab hidden">
+<div class="panel"><h2>Editable rates & container costs</h2>
+<p class="note">Your previously supplied 40-foot container baseline is loaded below: $8,100 shipping + $14,000 customs, duties, port fees and unloading = $22,100 total.</p>
+<form id="settingsForm">
+<div class="formgrid">
+<div><label>Standard cargo rate ($ / kg)</label><input name="kgRate" type="number" step=".01"></div>
+<div><label>Recommended cargo rate ($ / kg)</label><input name="recommendedRate" type="number" step=".01"></div>
+<div><label>Furniture / mattress rate ($ / cu ft)</label><input name="cuftRate" type="number" step=".01"></div>
+<div><label>Shipping cost per 40ft ($)</label><input name="shipping" type="number" step=".01"></div>
+<div><label>Customs, port & unloading ($)</label><input name="otherCosts" type="number" step=".01"></div>
+<div><label>Other expenses ($)</label><input name="extraCosts" type="number" step=".01"></div>
+<div><label>Target capacity (kg)</label><input name="capacity" type="number" step="1"></div>
+<div><label>Currency label</label><input name="currency" maxlength="8"></div>
+</div><button class="primary" type="submit">Save rates & costs</button></form>
+<div id="costSummary"></div></div>
+</section>
+
+<section id="backup" class="tab hidden">
+<div class="panel"><h2>Backup & export</h2><p class="note">Your records are saved on this device. Export a backup regularly, especially before changing phones or clearing browser data.</p>
+<button class="primary" id="exportJson">Download full backup</button><button class="secondary" id="exportCsv">Export cargo CSV</button>
+<label>Restore a backup file</label><input type="file" id="importFile" accept=".json,application/json">
+<p class="note">The app works offline after it has been opened online once. For safety, keep a backup file outside the phone too.</p></div>
+<div class="panel"><h2>How to install on iPhone</h2><ol><li>Open the published website in Safari.</li><li>Tap the Share icon.</li><li>Choose “Add to Home Screen”.</li><li>Tap Add. Gofasst Cargo will appear like an app.</li></ol></div>
+</section>
+</main>
+<script>
+const KEY='gofasstCargoDataV1';
+const defaults={settings:{kgRate:2,recommendedRate:2.25,cuftRate:0,shipping:8100,otherCosts:14000,extraCosts:0,capacity:20000,currency:'USD'},containers:[{id:'c1',name:'40ft Container 1',capacity:20000}],shipments:[]};
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch(e){return structuredClone(defaults)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function amount(s){return Number(s.quantity||0)*Number(s.rate||0)}
+function typeLabel(t){return t==='kg'?'kg':t==='cuft'?'cu ft':'units'}
+function render(){
+ const totalRevenue=db.shipments.reduce((a,s)=>a+amount(s),0);
+ const paid=db.shipments.reduce((a,s)=>a+Number(s.paid||0),0);
+ const balance=totalRevenue-paid;
+ const costs=Number(db.settings.shipping)+Number(db.settings.otherCosts)+Number(db.settings.extraCosts);
+ const loadedKg=db.shipments.filter(s=>s.type==='kg').reduce((a,s)=>a+Number(s.quantity||0),0);
+ const estProfit=totalRevenue-costs;
+ document.getElementById('metrics').innerHTML=[
+ ['Cargo revenue',money(totalRevenue)],['Payments received',money(paid)],['Customer balances',money(balance)],['Estimated profit',money(estProfit)],
+ ['Cargo records',db.shipments.length],['Containers',db.containers.length],['Kg logged',loadedKg.toLocaleString()],['Container cost',money(costs)]
+ ].map(([a,b])=>`<div class="metric"><small>${a}</small><strong>${b}</strong></div>`).join('');
+ document.getElementById('pricingGuide').innerHTML=`<p>Break-even at ${Number(db.settings.capacity).toLocaleString()} kg: <b>${money(costs/Math.max(1,Number(db.settings.capacity)))}/kg</b></p><p>Recommended rate: <b>${money(db.settings.recommendedRate)}/kg</b></p><p>At full target capacity and recommended rate: revenue <b>${money(db.settings.capacity*db.settings.recommendedRate)}</b>; estimated gross profit <b class="positive">${money(db.settings.capacity*db.settings.recommendedRate-costs)}</b>.</p>`;
+ document.getElementById('recent').innerHTML=tableShipments(db.shipments.slice(-5).reverse());
+ const select=document.getElementById('shipmentContainer');let old=select.value;select.innerHTML=db.containers.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');if(db.containers.some(c=>c.id===old))select.value=old;
+ document.getElementById('shipmentTable').innerHTML=tableShipments([...db.shipments].reverse());
+ document.getElementById('containerList').innerHTML=db.containers.map(c=>{let kg=db.shipments.filter(s=>s.container===c.id&&s.type==='kg').reduce((a,s)=>a+Number(s.quantity),0);let rev=db.shipments.filter(s=>s.container===c.id).reduce((a,s)=>a+amount(s),0);return `<div class="panel"><h2>${esc(c.name)}</h2><p>${kg.toLocaleString()} kg of ${Number(c.capacity).toLocaleString()} kg target · ${money(rev)} cargo revenue</p><button class="danger" onclick="deleteContainer('${c.id}')">Delete container</button></div>`}).join('');
+ const f=document.getElementById('settingsForm');Object.entries(db.settings).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v});
+ document.getElementById('costSummary').innerHTML=`<p>Total estimated container cost: <b>${money(costs)}</b></p><p>Break-even rate at target capacity: <b>${money(costs/Math.max(1,Number(db.settings.capacity)))}/kg</b></p>`;
+}
+function tableShipments(list){if(!list.length)return '<p class="muted">No cargo records yet.</p>';return `<table><thead><tr><th>Customer</th><th>Container</th><th>Qty</th><th>Revenue</th><th>Paid</th><th>Balance</th><th></th></tr></thead><tbody>${list.map(s=>`<tr><td><b>${esc(s.customer)}</b><br><span class="muted">${esc(s.phone)}</span></td><td>${esc((db.containers.find(c=>c.id===s.container)||{}).name||'—')}</td><td>${Number(s.quantity).toLocaleString()} ${typeLabel(s.type)}</td><td>${money(amount(s))}</td><td>${money(s.paid)}</td><td>${money(amount(s)-Number(s.paid||0))}</td><td><button class="danger" onclick="deleteShipment('${s.id}')">Delete</button></td></tr>`).join('')}</tbody></table>`}
+window.deleteShipment=id=>{if(confirm('Delete this cargo record?')){db.shipments=db.shipments.filter(s=>s.id!==id);save()}};
+window.deleteContainer=id=>{if(db.shipments.some(s=>s.container===id)){alert('This container has cargo records. Move or delete those records first.');return}if(confirm('Delete this container?')){db.containers=db.containers.filter(c=>c.id!==id);save()}};
+document.getElementById('shipmentForm').addEventListener('submit',e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target));db.shipments.push({...x,id:crypto.randomUUID(),quantity:Number(x.quantity),rate:Number(x.rate),paid:Number(x.paid),date:x.date||new Date().toISOString().slice(0,10)});e.target.reset();document.getElementById('shipmentDate').value=new Date().toISOString().slice(0,10);save()});
+document.getElementById('containerForm').addEventListener('submit',e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target));db.containers.push({...x,id:crypto.randomUUID(),capacity:Number(x.capacity)});e.target.reset();save()});
+document.getElementById('settingsForm').addEventListener('submit',e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target));for(let k in x)db.settings[k]=['currency'].includes(k)?x[k]:Number(x[k]);save();alert('Rates and costs saved.')});
+document.getElementById('shipmentSearch').addEventListener('input',e=>{let q=e.target.value.toLowerCase();document.getElementById('shipmentTable').innerHTML=tableShipments([...db.shipments].reverse().filter(s=>(s.customer+' '+s.phone).toLowerCase().includes(q)))});
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))}));
+function download(name,data,type){let a=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type}));a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+document.getElementById('exportJson').onclick=()=>download('gofasst-cargo-backup.json',JSON.stringify(db,null,2),'application/json');
+document.getElementById('exportCsv').onclick=()=>{let rows=[['Customer','Phone','Container','Type','Quantity','Rate','Revenue','Paid','Balance','Date','Notes'],...db.shipments.map(s=>[s.customer,s.phone,(db.containers.find(c=>c.id===s.container)||{}).name,s.type,s.quantity,s.rate,amount(s),s.paid,amount(s)-s.paid,s.date,s.notes])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');download('gofasst-cargo.csv',csv,'text/csv')};
+document.getElementById('importFile').addEventListener('change',async e=>{let file=e.target.files[0];if(!file)return;try{let x=JSON.parse(await file.text());if(!x.settings||!x.shipments||!x.containers)throw Error();if(confirm('Replace the data on this device with this backup?')){db=x;save();alert('Backup restored.')}}catch(err){alert('That file is not a valid Gofasst Cargo backup.')}e.target.value=''});
+document.getElementById('shipmentDate').value=new Date().toISOString().slice(0,10);
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+</script>
+</body></html>

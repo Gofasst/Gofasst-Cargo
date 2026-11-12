@@ -1,0 +1,21 @@
+{
+  "name": "Gofasst Cargo Management",
+  "short_name": "Gofasst Cargo",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f9",
+  "theme_color": "#123b5d",
+  "description": "Cargo, customer, container and profit management for Gofasst Shipping and Logistic LLC.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
